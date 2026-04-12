@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Buildify — Your AI Business Coach</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F4EF;--surface:#FFFFFF;--card:#FDFCFA;--border:#E8E2D9;--border2:#D4CCBE;
+  --accent:#1A1A2E;--lime:#C8F135;--lime-dark:#9BBF10;--teal:#0D9488;--teal-light:#CCFBF1;
+  --red:#DC2626;--red-light:#FEE2E2;--text:#1A1A2E;--muted:#7A7065;--muted2:#B0A898;
+  --font-head:'Fraunces',Georgia,serif;--font-body:'Instrument Sans',sans-serif;
+  --sidebar:260px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);overflow:hidden}
+
+.layout{display:grid;grid-template-columns:var(--sidebar) 1fr;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{background:var(--accent);display:flex;flex-direction:column;padding:40px 28px;position:relative;overflow:hidden}
+.sidebar::before{content:'';position:absolute;bottom:-80px;right:-80px;width:260px;height:260px;border-radius:50%;background:rgba(200,241,53,0.07);pointer-events:none}
+.sidebar::after{content:'';position:absolute;top:30%;left:-60px;width:180px;height:180px;border-radius:50%;background:rgba(13,148,136,0.08);pointer-events:none}
+.logo{font-family:var(--font-head);font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:4px}
+.logo span{color:var(--lime)}
+.logo-tagline{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:48px}
+.steps-nav{display:flex;flex-direction:column;gap:4px;flex:1}
+.step-item{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:12px;cursor:pointer;transition:background 0.2s;position:relative}
+.step-item:hover{background:rgba(255,255,255,0.05)}
+.step-item.active{background:rgba(200,241,53,0.12)}
+.step-num{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:rgba(255,255,255,0.4);flex-shrink:0;transition:all 0.3s}
+.step-item.active .step-num{background:var(--lime);color:var(--accent)}
+.step-item.done .step-num{background:var(--lime);color:var(--accent)}
+.step-info{flex:1}
+.step-label{font-size:13px;font-weight:500;color:rgba(255,255,255,0.4);display:block;transition:color 0.2s}
+.step-item.active .step-label{color:#fff}
+.step-item.done .step-label{color:rgba(255,255,255,0.6)}
+.step-desc{font-size:11px;color:rgba(255,255,255,0.25);margin-top:1px}
+.step-item.active .step-desc{color:rgba(255,255,255,0.45)}
+.step-connector{width:1px;height:20px;background:rgba(255,255,255,0.08);margin-left:27px}
+.sidebar-footer{margin-top:auto;padding-top:28px;border-top:1px solid rgba(255,255,255,0.08)}
+.sidebar-footer p{font-size:11px;color:rgba(255,255,255,0.25);line-height:1.5}
+
+/* MAIN */
+.main{overflow:hidden;position:relative;background:var(--bg)}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:auto;opacity:0;pointer-events:none;transform:translateY(16px);transition:opacity 0.4s cubic-bezier(.4,0,.2,1),transform 0.4s cubic-bezier(.4,0,.2,1);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.screen.active{opacity:1;pointer-events:all;transform:translateY(0)}
+.screen.exit{opacity:0;transform:translateY(-16px)}
+.screen-inner{max-width:820px;width:100%;padding:56px 64px;margin:0 auto}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:44px}
+.topbar-label{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.progress-pill{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:8px 16px}
+.progress-track{width:120px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--lime);border-radius:2px;transition:width 0.5s ease}
+.progress-pct{font-size:12px;font-weight:600;color:var(--muted)}
+
+/* BUTTONS */
+.btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;font-family:var(--font-body);font-weight:600;font-size:15px;border:none;border-radius:12px;padding:15px 30px;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,background 0.15s;white-space:nowrap}
+.btn-primary:hover{background:#2d2d4a;transform:translateY(-2px);box-shadow:0 12px 32px rgba(26,26,46,0.2)}
+.btn-primary.lime{background:var(--lime);color:var(--accent)}
+.btn-primary.lime:hover{background:var(--lime-dark);box-shadow:0 12px 32px rgba(200,241,53,0.3)}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--muted);font-family:var(--font-body);font-weight:500;font-size:14px;border:1.5px solid var(--border2);border-radius:12px;padding:14px 24px;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+.section-eyebrow{font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+.section-h2{font-family:var(--font-head);font-size:42px;font-weight:900;letter-spacing:-1.5px;line-height:1.05;color:var(--text);margin-bottom:10px}
+
+/* ── S1: Welcome ── */
+#s1 .screen-inner{min-height:100vh;display:flex;flex-direction:column;justify-content:center}
+.welcome-grid{display:grid;grid-template-columns:1fr 380px;gap:64px;align-items:center}
+.welcome-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--teal-light);color:var(--teal);font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:6px 14px;border-radius:100px;margin-bottom:24px}
+.welcome-eyebrow::before{content:'✦';font-size:10px}
+.welcome-h1{font-family:var(--font-head);font-size:68px;font-weight:900;line-height:0.95;letter-spacing:-3px;color:var(--text);margin-bottom:22px}
+.welcome-h1 em{font-style:italic;color:var(--teal)}
+.welcome-h1 .hl{position:relative;display:inline-block;background:var(--lime);padding:0 8px;border-radius:6px;color:var(--accent)}
+.welcome-desc{font-size:17px;font-weight:400;line-height:1.7;color:var(--muted);max-width:420px;margin-bottom:36px}
+.welcome-actions{display:flex;gap:14px;align-items:center}
+.welcome-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;box-shadow:0 4px 40px rgba(0,0,0,0.06)}
+.wc-title{font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:20px;color:var(--text)}
+.wc-steps{display:flex;flex-direction:column;gap:16px}
+.wc-step{display:flex;align-items:flex-start;gap:14px}
+.wc-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.wc-icon.c1{background:#FEF3C7}.wc-icon.c2{background:#DBEAFE}.wc-icon.c3{background:var(--teal-light)}.wc-icon.c4{background:#FCE7F3}
+.wc-step-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.wc-step-desc{font-size:12px;color:var(--muted);line-height:1.4}
+.wc-divider{width:1px;height:12px;background:var(--border);margin-left:18px}
+
+/* ── S2: Questions ── */
+.q-layout{display:grid;grid-template-columns:1fr 300px;gap:40px;align-items:start}
+.q-stepper{display:flex;align-items:center;gap:6px;margin-bottom:24px}
+.q-step-dot{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:11px;font-weight:600;border:1.5px solid var(--border);color:var(--muted2);transition:all 0.25s}
+.q-step-dot.done{background:var(--lime);border-color:var(--lime);color:var(--accent)}
+.q-step-dot.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.q-step-line{flex:1;height:1px;background:var(--border)}
+.q-step-line.done{background:var(--lime)}
+.question-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:20px;box-shadow:0 2px 20px rgba(0,0,0,0.04);min-height:200px;transition:opacity 0.28s,transform 0.28s}
+.q-number{font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted2);margin-bottom:12px}
+.q-text{font-family:var(--font-head);font-size:22px;font-weight:700;line-height:1.3;color:var(--text);margin-bottom:22px;letter-spacing:-0.5px}
+.options{display:flex;flex-direction:column;gap:8px}
+.option-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:13px 18px;font-family:var(--font-body);font-size:14px;color:var(--muted);cursor:pointer;text-align:left;transition:all 0.18s}
+.option-btn:hover{border-color:var(--accent);color:var(--text);background:var(--surface)}
+.option-btn.selected{border-color:var(--accent);color:var(--accent);background:#EEF0FF}
+.q-nav{display:flex;align-items:center;gap:12px}
+.q-back{background:none;border:1.5px solid var(--border);border-radius:10px;padding:13px 18px;font-family:var(--font-body);font-size:14px;color:var(--muted);cursor:pointer;transition:all 0.2s}
+.q-back:hover{border-color:var(--accent);color:var(--accent)}
+.q-sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;position:sticky;top:60px}
+.q-sidebar-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px}
+.q-answer-list{display:flex;flex-direction:column;gap:8px}
+.q-answer-row{display:flex;flex-direction:column;gap:3px;padding:10px 12px;background:var(--bg);border-radius:10px}
+.qa-label{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.1em}
+.qa-value{font-size:13px;color:var(--text);font-weight:500}
+.qa-empty{font-size:12px;color:var(--muted2);font-style:italic}
+
+/* ── S3: Idea ── */
+.idea-layout{display:grid;grid-template-columns:1fr 320px;gap:40px;align-items:start}
+.idea-hero{background:linear-gradient(135deg,var(--accent) 0%,#2d2d5a 100%);border-radius:24px;padding:36px;margin-bottom:18px;position:relative;overflow:hidden}
+.idea-hero::before{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(200,241,53,0.1)}
+.idea-ai-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(200,241,53,0.15);color:var(--lime);font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:5px 12px;border-radius:100px;margin-bottom:18px}
+.ai-pulse{width:6px;height:6px;border-radius:50%;background:var(--lime);animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.idea-hero-name{font-family:var(--font-head);font-size:34px;font-weight:900;color:#fff;letter-spacing:-1.5px;line-height:1.1;margin-bottom:14px}
+.idea-hero-desc{font-size:15px;color:rgba(255,255,255,0.65);line-height:1.65}
+.idea-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;text-align:center}
+.stat-val{font-family:var(--font-head);font-size:26px;font-weight:900;color:var(--accent);display:block;letter-spacing:-1px}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:4px;display:block}
+.idea-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.tag{background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:6px 14px;font-size:12px;color:var(--muted)}
+.tag.teal{border-color:var(--teal);color:var(--teal);background:var(--teal-light)}
+.tag.lime{border-color:var(--lime-dark);color:var(--lime-dark);background:#F7FEE7}
+.idea-why{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:14px}
+.idea-why-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px}
+.idea-why-item{display:flex;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.idea-why-item:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.why-icon{font-size:18px;flex-shrink:0;margin-top:2px}
+.why-text{font-size:13px;color:var(--muted);line-height:1.55}
+.why-text strong{color:var(--text);font-weight:600}
+
+/* ── S4: Task ── */
+.task-layout{display:grid;grid-template-columns:1fr 280px;gap:40px;align-items:start}
+.task-hero{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:36px;margin-bottom:18px}
+.task-emoji{font-size:52px;display:block;margin-bottom:18px}
+.task-title{font-family:var(--font-head);font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:10px;color:var(--text)}
+.task-intro{font-size:15px;color:var(--muted);line-height:1.65;margin-bottom:24px}
+.task-steps{list-style:none;display:flex;flex-direction:column;gap:0}
+.task-step{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
+.task-step:last-child{border-bottom:none}
+.ts-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:3px}
+.ts-text{font-size:15px;color:var(--text);line-height:1.55}
+.ts-text em{color:var(--teal);font-style:italic;font-weight:500}
+.task-check-wrap{display:flex;align-items:center;gap:16px;background:var(--bg);border:2px solid var(--border);border-radius:16px;padding:18px 22px;cursor:pointer;margin-top:24px;transition:all 0.2s;user-select:none}
+.task-check-wrap:hover{border-color:var(--lime-dark)}
+.task-check-wrap.checked{border-color:var(--lime);background:#FAFFF0}
+.checkbox-box{width:26px;height:26px;border-radius:8px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;transition:all 0.2s;background:#fff}
+.task-check-wrap.checked .checkbox-box{background:var(--lime);border-color:var(--lime);color:var(--accent)}
+.check-text{font-size:14px;font-weight:500;color:var(--muted)}
+.task-check-wrap.checked .check-text{color:var(--lime-dark);font-weight:600}
+.task-tip{background:#FFFBEB;border:1px solid #FDE68A;border-radius:14px;padding:20px;margin-bottom:12px}
+.task-tip-title{font-size:12px;font-weight:600;color:#92400E;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.task-tip-body{font-size:13px;color:#78350F;line-height:1.6}
+.task-xp{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:12px;display:flex;align-items:center;gap:14px}
+.xp-icon{font-size:30px}
+.xp-val{font-family:var(--font-head);font-size:22px;font-weight:900;color:var(--accent);display:block;letter-spacing:-1px}
+.xp-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em}
+
+/* ── S5: Human Check ── */
+.hc-layout{display:grid;grid-template-columns:1fr 300px;gap:40px;align-items:start}
+.hc-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:36px;margin-bottom:16px}
+.hc-ai-badge{display:inline-flex;align-items:center;gap:8px;background:var(--teal-light);color:var(--teal);font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:5px 12px;border-radius:100px;margin-bottom:18px}
+.hc-suggestion{font-family:var(--font-head);font-size:19px;font-style:italic;font-weight:300;line-height:1.65;color:var(--text);border-left:3px solid var(--teal);padding-left:20px;margin-bottom:24px}
+.hc-question{font-family:var(--font-head);font-size:26px;font-weight:900;letter-spacing:-1px;color:var(--text);margin-bottom:8px}
+.hc-sub{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:24px}
+.vote-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}
+.vote-btn{background:var(--bg);border:2px solid var(--border);border-radius:20px;padding:26px 18px;text-align:center;cursor:pointer;transition:all 0.2s}
+.vote-btn:hover{border-color:var(--accent);background:var(--surface)}
+.vote-btn.selected-yes{border-color:var(--teal);background:var(--teal-light)}
+.vote-btn.selected-no{border-color:#F59E0B;background:#FFFBEB}
+.vote-emoji{font-size:34px;display:block;margin-bottom:8px}
+.vote-label{font-size:15px;font-weight:600;color:var(--text);display:block;margin-bottom:3px}
+.vote-desc{font-size:12px;color:var(--muted)}
+.vote-btn.selected-yes .vote-label{color:var(--teal)}
+.vote-btn.selected-no .vote-label{color:#D97706}
+.feedback-label{font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.feedback-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px;font-family:var(--font-body);font-size:14px;color:var(--text);outline:none;resize:none;min-height:88px;transition:border-color 0.2s;margin-bottom:20px}
+.feedback-input:focus{border-color:var(--accent)}
+.feedback-input::placeholder{color:var(--muted2)}
+.hc-checklist{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:14px}
+.hc-cl-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px}
+.cl-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;font-size:13px;color:var(--muted);line-height:1.5}
+.cl-icon{font-size:14px;flex-shrink:0;margin-top:2px;color:var(--muted2)}
+
+/* SUCCESS */
+.success-overlay{position:fixed;inset:0;background:rgba(247,244,239,0.97);backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;opacity:0;pointer-events:none;transition:opacity 0.4s;text-align:center;padding:40px}
+.success-overlay.show{opacity:1;pointer-events:all}
+.success-emoji-big{font-size:80px;margin-bottom:28px;animation:popIn 0.5s ease}
+@keyframes popIn{0%{transform:scale(0.4)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
+.success-title{font-family:var(--font-head);font-size:54px;font-weight:900;letter-spacing:-2px;color:var(--accent);margin-bottom:14px}
+.success-sub{font-size:17px;color:var(--muted);max-width:480px;line-height:1.65;margin-bottom:40px}
+.success-actions{display:flex;gap:14px;justify-content:center}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">Build<span>ify</span></div>
+    <div class="logo-tagline">AI Business Coach</div>
+    <nav class="steps-nav">
+      <div class="step-item active" id="nav1">
+        <div class="step-num">1</div>
+        <div class="step-info"><span class="step-label">Welcome</span><span class="step-desc">Get started</span></div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-item" id="nav2">
+        <div class="step-num">2</div>
+        <div class="step-info"><span class="step-label">About You</span><span class="step-desc">5 quick questions</span></div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-item" id="nav3">
+        <div class="step-num">3</div>
+        <div class="step-info"><span class="step-label">Your Idea</span><span class="step-desc">AI-matched business</span></div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-item" id="nav4">
+        <div class="step-num">4</div>
+        <div class="step-info"><span class="step-label">Daily Task</span><span class="step-desc">First real action</span></div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-item" id="nav5">
+        <div class="step-num">5</div>
+        <div class="step-info"><span class="step-label">Human Check</span><span class="step-desc">You decide</span></div>
+      </div>
+    </nav>
+    <div class="sidebar-footer"><p>Buildify Prototype v1.0<br>Milestone 3 — Howell F</p></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- S1: Welcome -->
+    <div class="screen active" id="s1">
+      <div class="screen-inner" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center">
+        <div class="welcome-grid">
+          <div>
+            <div class="welcome-eyebrow">Your AI Business Coach</div>
+            <h1 class="welcome-h1">Turn <em>passion</em><br>into a <span class="hl">business.</span></h1>
+            <p class="welcome-desc">Buildify asks the right questions, suggests the right idea, and gives you one small task a day — until you're actually running something real.</p>
+            <div class="welcome-actions">
+              <button class="btn-primary lime" onclick="goTo(2)">Get Started →</button>
+              <button class="btn-ghost" onclick="goTo(2)">I already have an idea</button>
+            </div>
+          </div>
+          <div class="welcome-card">
+            <div class="wc-title">What happens next</div>
+            <div class="wc-steps">
+              <div class="wc-step"><div class="wc-icon c1">🙋</div><div><div class="wc-step-name">Tell us about yourself</div><div class="wc-step-desc">5 quick questions about your interests & time</div></div></div>
+              <div class="wc-divider"></div>
+              <div class="wc-step"><div class="wc-icon c2">💡</div><div><div class="wc-step-name">Get your business idea</div><div class="wc-step-desc">AI matches you with an idea that fits your life</div></div></div>
+              <div class="wc-divider"></div>
+              <div class="wc-step"><div class="wc-icon c3">✅</div><div><div class="wc-step-name">Do today's task</div><div class="wc-step-desc">One small real-world action to test the idea</div></div></div>
+              <div class="wc-divider"></div>
+              <div class="wc-step"><div class="wc-icon c4">🤔</div><div><div class="wc-step-name">You make the call</div><div class="wc-step-desc">Does it fit your community? You decide.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S2: Questions -->
+    <div class="screen" id="s2">
+      <div class="screen-inner">
+        <div class="topbar">
+          <span class="topbar-label">Step 1 — About You</span>
+          <div class="progress-pill"><div class="progress-track"><div class="progress-fill" id="progressFill" style="width:20%"></div></div><span class="progress-pct" id="progressPct">20%</span></div>
+        </div>
+        <div class="q-layout">
+          <div>
+            <div class="section-eyebrow">Questions</div>
+            <h2 class="section-h2" style="margin-bottom:8px">Let's find your<br>perfect fit</h2>
+            <p style="font-size:15px;color:var(--muted);line-height:1.6;margin-bottom:28px">Answer honestly — the AI uses these to personalise your business idea.</p>
+            <div class="q-stepper" id="qStepper"></div>
+            <div class="question-card" id="questionCard">
+              <div class="q-number" id="qNum">Question 1 of 5</div>
+              <div class="q-text" id="qText"></div>
+              <div id="qAnswerArea"></div>
+            </div>
+            <div class="q-nav">
+              <button class="q-back" id="qBackBtn" onclick="prevQuestion()" style="display:none">← Back</button>
+              <button class="btn-primary" id="qNextBtn" onclick="nextQuestion()">Next →</button>
+            </div>
+          </div>
+          <div>
+            <div class="q-sidebar-card">
+              <div class="q-sidebar-title">Your answers so far</div>
+              <div class="q-answer-list" id="qAnswerList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3: Idea -->
+    <div class="screen" id="s3">
+      <div class="screen-inner">
+        <div class="topbar">
+          <span class="topbar-label">Step 2 — Your Business Idea</span>
+          <div class="progress-pill"><div class="progress-track"><div class="progress-fill" style="width:50%"></div></div><span class="progress-pct">50%</span></div>
+        </div>
+        <div class="idea-layout">
+          <div>
+            <div class="section-eyebrow">AI Matched</div>
+            <h2 class="section-h2" style="margin-bottom:22px">Here's your<br>business idea</h2>
+            <div class="idea-hero">
+              <div class="idea-ai-badge"><div class="ai-pulse"></div>AI Suggested</div>
+              <div class="idea-hero-name" id="ideaName">Neighbourhood Cooking Club</div>
+              <div class="idea-hero-desc" id="ideaDesc">Host weekly cooking sessions at home and charge a small fee. Start with friends, grow by word of mouth.</div>
+            </div>
+            <div class="idea-stats">
+              <div class="stat-box"><span class="stat-val">$0</span><span class="stat-label">Start-up cost</span></div>
+              <div class="stat-box"><span class="stat-val" id="ideaHours">5–10</span><span class="stat-label">Hours / week</span></div>
+              <div class="stat-box"><span class="stat-val">Day 1</span><span class="stat-label">Can start</span></div>
+            </div>
+            <div class="idea-tags"><span class="tag">👥 Community</span><span class="tag teal" id="ideaPill">🍳 Cooking</span><span class="tag lime">📈 Scalable</span><span class="tag">💰 Low risk</span></div>
+            <div style="display:flex;gap:12px">
+              <button class="btn-primary lime" onclick="goTo(4)">Looks great — let's go! →</button>
+              <button class="btn-ghost" onclick="goTo(2)">← Redo questions</button>
+            </div>
+          </div>
+          <div>
+            <div class="idea-why">
+              <div class="idea-why-title">🧠 Why this works for you</div>
+              <div class="idea-why-item"><div class="why-icon">✅</div><div class="why-text"><strong>Matches your interest</strong> — you enjoy this, so it won't feel like work.</div></div>
+              <div class="idea-why-item"><div class="why-icon">⏱</div><div class="why-text" id="whyTime"><strong>Fits your schedule</strong> — doable within the hours you have.</div></div>
+              <div class="idea-why-item"><div class="why-icon">🌍</div><div class="why-text"><strong>Community-first</strong> — builds local trust before scaling wider.</div></div>
+              <div class="idea-why-item"><div class="why-icon">💸</div><div class="why-text"><strong>Zero investment needed</strong> — you already have everything to start.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S4: Task -->
+    <div class="screen" id="s4">
+      <div class="screen-inner">
+        <div class="topbar">
+          <span class="topbar-label">Step 3 — Today's Task</span>
+          <div class="progress-pill"><div class="progress-track"><div class="progress-fill" style="width:75%"></div></div><span class="progress-pct">75%</span></div>
+        </div>
+        <div class="task-layout">
+          <div>
+            <div class="section-eyebrow">Daily Mission</div>
+            <h2 class="section-h2" style="margin-bottom:22px">Your first real<br>market research</h2>
+            <div class="task-hero">
+              <span class="task-emoji">🚶</span>
+              <div class="task-title">Talk to 3 People Today</div>
+              <div class="task-intro">This is where your business becomes real. Go outside and ask actual people in your neighbourhood — not family, not close friends — if they'd pay for your idea.</div>
+              <ul class="task-steps">
+                <li class="task-step"><div class="ts-num">1</div><div class="ts-text">Go outside and find <strong>3 people in your neighbourhood</strong> — neighbours, shopkeepers, anyone nearby.</div></li>
+                <li class="task-step"><div class="ts-num">2</div><div class="ts-text">Ask them: <em>"Would you pay for [your business idea]? Why or why not?"</em></div></li>
+                <li class="task-step"><div class="ts-num">3</div><div class="ts-text"><strong>Write down exactly what they say.</strong> This is your first market research — it's valuable data!</div></li>
+              </ul>
+              <div class="task-check-wrap" id="taskCheck" onclick="toggleTask()">
+                <div class="checkbox-box" id="checkBox"></div>
+                <span class="check-text" id="checkLabel">Mark as done when you've completed this task</span>
+              </div>
+            </div>
+            <button class="btn-primary" id="taskNextBtn" onclick="goTo(5)" style="opacity:0.35;pointer-events:none">Continue to Final Step →</button>
+          </div>
+          <div>
+            <div class="task-xp"><div class="xp-icon">⚡</div><div><span class="xp-val">+10 XP</span><span class="xp-label">Earned on completion</span></div></div>
+            <div class="task-tip"><div class="task-tip-title">💡 Pro tip</div><div class="task-tip-body">Don't pitch — just ask and listen. You'll learn more from one honest "no" than ten polite "yes" answers. Write down their exact words.</div></div>
+            <div class="task-tip" style="background:#F0FDF4;border-color:#BBF7D0"><div class="task-tip-title" style="color:#14532D">📝 What to note</div><div class="task-tip-body" style="color:#166534">Their exact reaction, any hesitation, what they said yes or no to, and any suggestions they offered unprompted.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S5: Human Check -->
+    <div class="screen" id="s5">
+      <div class="screen-inner">
+        <div class="topbar">
+          <span class="topbar-label">Step 4 — Human Check</span>
+          <div class="progress-pill"><div class="progress-track"><div class="progress-fill" style="width:100%"></div></div><span class="progress-pct">100%</span></div>
+        </div>
+        <div class="hc-layout">
+          <div>
+            <div class="section-eyebrow">Final Step</div>
+            <h2 class="section-h2" style="margin-bottom:22px">AI suggested it.<br>You decide.</h2>
+            <div class="hc-card">
+              <div class="hc-ai-badge"><div class="ai-pulse" style="background:var(--teal)"></div>AI Analysis</div>
+              <div class="hc-suggestion" id="hcSuggestion">"Your community would pay for a weekly cooking experience. People seek local, personal, skill-based interactions over mass-produced alternatives."</div>
+              <div class="hc-question">Does this make sense for YOUR community?</div>
+              <div class="hc-sub">You just spoke to real people. You know your neighbourhood. Trust your gut — the AI doesn't know what you now know.</div>
+              <div class="vote-row">
+                <div class="vote-btn" id="voteYes" onclick="vote('yes')"><span class="vote-emoji">✅</span><span class="vote-label">Yes, it fits!</span><span class="vote-desc">The idea works for my community</span></div>
+                <div class="vote-btn" id="voteNo" onclick="vote('no')"><span class="vote-emoji">🤔</span><span class="vote-label">Needs tweaking</span><span class="vote-desc">Something feels off — I'll adjust</span></div>
+              </div>
+              <div id="feedbackSection" style="display:none">
+                <div class="feedback-label">What would you change?</div>
+                <textarea class="feedback-input" placeholder="e.g. People here prefer outdoor activities, not indoor sessions. Maybe park meetups instead..."></textarea>
+              </div>
+              <button class="btn-primary lime" id="submitBtn" onclick="finish()" style="opacity:0.35;pointer-events:none;width:100%">Submit & Complete Milestone 3 🎉</button>
+            </div>
+          </div>
+          <div>
+            <div class="hc-checklist">
+              <div class="hc-cl-title">Review Checklist</div>
+              <div class="cl-item"><div class="cl-icon">□</div><div>All 5 screens are present and working</div></div>
+              <div class="cl-item"><div class="cl-icon">□</div><div>Full flow is clickable without getting stuck</div></div>
+              <div class="cl-item"><div class="cl-icon">□</div><div>Tested yourself at least once</div></div>
+              <div class="cl-item"><div class="cl-icon">□</div><div>3 people outside your team tried it</div></div>
+              <div class="cl-item"><div class="cl-icon">□</div><div>Listed 2+ things that confused users</div></div>
+              <div class="cl-item"><div class="cl-icon">□</div><div>Shared the file with Sara for testing</div></div>
+            </div>
+            <div class="task-tip"><div class="task-tip-title">🎯 Remember</div><div class="task-tip-body">The AI's suggestion is a starting point — not the final word. Your real-world conversations are the most valuable data you have right now.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Success -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-emoji-big">🚀</div>
+  <div class="success-title">Milestone 3 Complete!</div>
+  <p class="success-sub">You've built a working Buildify prototype and done your first real market research. Now share it with Sara and your test users!</p>
+  <div class="success-actions">
+    <button class="btn-primary lime" onclick="restart()">Start Over ↩</button>
+    <button class="btn-ghost" onclick="document.getElementById('successOverlay').classList.remove('show')">← Back to App</button>
+  </div>
+</div>
+
+<script>
+let cur=1,curQ=0,answers={},taskDone=false,voted=null;
+const Qs=[
+  {text:"What do you enjoy doing in your free time?",short:"Interest",options:["🍳 Cooking / Food","🎨 Art & Crafts","💻 Tech & Apps","⚽ Sports & Fitness","📚 Teaching others"]},
+  {text:"Do you prefer working with people, alone, or a mix of both?",short:"Work style",options:["👥 With people","🧘 Alone","⚖️ Mix of both"]},
+  {text:"Do you already have a business idea, or are you looking for one?",short:"Starting point",options:["💡 I have an idea","🔍 Looking for one","🤷 Not sure yet"]},
+  {text:"How much time can you spend on your business each week?",short:"Time available",options:["⏱ 1–5 hrs/week","🕐 5–10 hrs/week","💪 10+ hrs/week"]},
+  {text:"What is most important to you?",short:"Priority",options:["💰 Making money","🤝 Helping my community","🌟 Both equally"]},
+];
+const ideas={
+  "🍳 Cooking / Food":{name:"Neighbourhood Cooking Club",desc:"Host weekly cooking sessions at home and charge a small fee. Start with friends, grow by word of mouth. No investment needed — just your kitchen and passion.",pill:"🍳 Cooking",s:'"Your community would actively pay for a shared cooking experience. Urban residents increasingly seek local, personal, skill-based interactions over passive consumption."'},
+  "🎨 Art & Crafts":{name:"Craft Workshop at Home",desc:"Run weekend craft workshops for kids or adults. Charge per session, upsell kits. Your creative skill becomes a fun local experience people will recommend.",pill:"🎨 Art & Crafts",s:'"Craft workshops fill a real gap between boring weekends and expensive courses. Parents and young adults will pay well for enriching hands-on experiences."'},
+  "💻 Tech & Apps":{name:"Tech Help for Seniors",desc:"Charge a fee to help seniors in your area set up phones, tablets, or computers. High demand, almost zero competition, and deeply appreciated.",pill:"💻 Tech Skills",s:'"Tech literacy gaps in older communities represent a massive unmet need. Personalised, patient, home-visit help is something families are actively willing to pay for."'},
+  "⚽ Sports & Fitness":{name:"Community Fitness Sessions",desc:"Run outdoor group fitness classes in your local park. Start free to build a crowd, then convert to paid weekly subscriptions. All you need is energy.",pill:"⚽ Fitness",s:'"Affordable group fitness in local parks has exploded in demand. People crave community and accountability — not just a gym membership card."'},
+  "📚 Teaching others":{name:"Micro-Tutoring Service",desc:"Offer 1-on-1 or small group tutoring in subjects you know well. Parents in your neighbourhood are constantly seeking affordable, local, trusted tutors.",pill:"📚 Teaching",s:'"Demand for local, affordable tutoring has never been higher. A trusted neighbourhood face is far more appealing than an anonymous app or tutor portal."'},
+};
+const hrsMap={"⏱ 1–5 hrs/week":"1–5","🕐 5–10 hrs/week":"5–10","💪 10+ hrs/week":"10+"};
+
+function goTo(n){
+  if(n===cur)return;
+  const from=document.getElementById('s'+cur);
+  const to=document.getElementById('s'+n);
+  from.classList.add('exit');
+  setTimeout(()=>{from.classList.remove('active','exit');to.classList.add('active');cur=n;updateNav(n);
+    if(n===2)renderQ();if(n===3)renderIdea();if(n===5)renderHC();
+  },320);
+}
+function updateNav(n){
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById('nav'+i);
+    el.classList.remove('active','done');
+    if(i<n){el.classList.add('done');el.querySelector('.step-num').textContent='✓';}
+    else{el.querySelector('.step-num').textContent=i;}
+    if(i===n)el.classList.add('active');
+  }
+}
+function renderQ(){
+  const q=Qs[curQ];
+  document.getElementById('qNum').textContent=`Question ${curQ+1} of ${Qs.length}`;
+  document.getElementById('qText').textContent=q.text;
+  const pct=Math.round(((curQ+1)/Qs.length)*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=pct+'%';
+  // stepper
+  const st=document.getElementById('qStepper');
+  st.innerHTML='';
+  Qs.forEach((_,i)=>{
+    if(i>0){const l=document.createElement('div');l.className='q-step-line'+(i<=curQ?' done':'');st.appendChild(l);}
+    const d=document.createElement('div');d.className='q-step-dot'+(i<curQ?' done':i===curQ?' active':'');d.textContent=i<curQ?'✓':(i+1);st.appendChild(d);
+  });
+  // options
+  document.getElementById('qAnswerArea').innerHTML=`<div class="options">${q.options.map(o=>`<button class="option-btn${answers[curQ]===o?' selected':''}" onclick="selOpt(this,'${o.replace(/'/g,"\\'")}') ">${o}</button>`).join('')}</div>`;
+  document.getElementById('qBackBtn').style.display=curQ>0?'block':'none';
+  document.getElementById('qNextBtn').textContent=curQ===Qs.length-1?'See My Business Idea →':'Next →';
+  renderAnswers();
+}
+function renderAnswers(){
+  document.getElementById('qAnswerList').innerHTML=Qs.map((q,i)=>`<div class="q-answer-row"><span class="qa-label">${q.short}</span>${answers[i]?`<span class="qa-value">${answers[i]}</span>`:`<span class="qa-empty">Not answered yet</span>`}</div>`).join('');
+}
+function selOpt(el,val){
+  answers[curQ]=val;
+  el.closest('.options').querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');renderAnswers();
+}
+function nextQuestion(){
+  if(curQ<Qs.length-1){curQ++;animCard();renderQ();}else goTo(3);
+}
+function prevQuestion(){if(curQ>0){curQ--;animCard();renderQ();}}
+function animCard(){const c=document.getElementById('questionCard');c.style.opacity='0';c.style.transform='translateX(16px)';setTimeout(()=>{c.style.transition='opacity 0.28s,transform 0.28s';c.style.opacity='1';c.style.transform='translateX(0)';},180);}
+function renderIdea(){
+  const key=answers[0]||"🍳 Cooking / Food";
+  const idea=ideas[key]||ideas["🍳 Cooking / Food"];
+  window._idea=idea;
+  document.getElementById('ideaName').textContent=idea.name;
+  document.getElementById('ideaDesc').textContent=idea.desc;
+  document.getElementById('ideaPill').textContent=idea.pill;
+  document.getElementById('ideaHours').textContent=hrsMap[answers[3]]||'5–10';
+  document.getElementById('whyTime').innerHTML=`<strong>Fits your schedule</strong> — works within ${hrsMap[answers[3]]||'5–10'} hrs/week.`;
+}
+function toggleTask(){
+  taskDone=!taskDone;
+  document.getElementById('taskCheck').classList.toggle('checked',taskDone);
+  document.getElementById('checkBox').textContent=taskDone?'✓':'';
+  document.getElementById('checkLabel').textContent=taskDone?'✅ Task completed — great work!':'Mark as done when you\'ve completed this task';
+  const btn=document.getElementById('taskNextBtn');
+  btn.style.opacity=taskDone?'1':'0.35';btn.style.pointerEvents=taskDone?'auto':'none';
+}
+function renderHC(){
+  const idea=window._idea||ideas["🍳 Cooking / Food"];
+  document.getElementById('hcSuggestion').textContent=idea.s;
+}
+function vote(v){
+  voted=v;
+  document.getElementById('voteYes').className='vote-btn'+(v==='yes'?' selected-yes':'');
+  document.getElementById('voteNo').className='vote-btn'+(v==='no'?' selected-no':'');
+  document.getElementById('feedbackSection').style.display=v==='no'?'block':'none';
+  const btn=document.getElementById('submitBtn');btn.style.opacity='1';btn.style.pointerEvents='auto';
+}
+function finish(){document.getElementById('successOverlay').classList.add('show');for(let i=1;i<=5;i++){const el=document.getElementById('nav'+i);el.classList.remove('active');el.classList.add('done');el.querySelector('.step-num').textContent='✓';}}
+function restart(){
+  cur=1;curQ=0;answers={};taskDone=false;voted=null;window._idea=null;
+  document.getElementById('successOverlay').classList.remove('show');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active','exit'));
+  document.getElementById('s1').classList.add('active');updateNav(1);
+  document.getElementById('taskCheck').classList.remove('checked');
+  document.getElementById('checkBox').textContent='';
+  document.getElementById('checkLabel').textContent="Mark as done when you've completed this task";
+  document.getElementById('taskNextBtn').style.cssText='opacity:0.35;pointer-events:none';
+  document.getElementById('voteYes').className='vote-btn';document.getElementById('voteNo').className='vote-btn';
+  document.getElementById('feedbackSection').style.display='none';
+  document.getElementById('submitBtn').style.cssText='opacity:0.35;pointer-events:none;width:100%';
+}
+renderQ();
+</script>
+</body>
+</html>
